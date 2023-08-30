@@ -74,6 +74,13 @@ is_deep_recursive=0
 # 	a warning message if -v is set
 is_forced=0
 
+# false by default - use -p to set it
+# it's used to only print the files about to move - checking
+# it will overwrite -v (-v will be true if -p is passed)
+# it will not make any changes
+is_print=0
+
+
 #
 # func
 #
@@ -131,6 +138,11 @@ rnspacy_checkout_option ()
 	then
 		# if verbose
 		is_verbose=1
+	elif [ "$1" = "-p" ]
+	then
+		# if print_mode
+		is_verbose=1
+		is_print=1
 	elif [ "$1" = "-r" ]
 	then
 		# if recursive
@@ -183,7 +195,12 @@ rnspacy_single_item ()
 	if ! [ -e "$new_file" ]
 	then
 		# if new name is unique
-		#mv -i "$new_name" "$new_file"
+
+		if [ $is_print -eq 0 ]
+		then
+			# if not in print mode
+			mv -i "$new_name" "$new_file"
+		fi
 
 		if [ $is_verbose -eq 1 ]
 		then
@@ -193,7 +210,12 @@ rnspacy_single_item ()
 	then
 		# if there's already a file with that name
 		# but overwrite is forced
-		#mv -f "$new_name" "$new_file"
+
+		if [ $is_print -eq 0 ]
+		then
+			# if not in print mode
+			mv -f "$new_name" "$new_file"
+		fi
 
 		if [ $is_verbose -eq 1 ]
 		then
