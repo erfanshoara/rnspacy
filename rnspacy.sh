@@ -5,7 +5,7 @@
 #	rnspacy.sh
 #
 #	author:	Erfan Shoara (erfan@shoara.net)
-#	date:	Aug 27, 2023
+#	date:	Sep 14, 2023
 #	description:
 #		it fixes annoying file/dir names that have bad characters in them
 #		it replaces them with a good char, by default it removes only spaces
@@ -74,6 +74,14 @@ is_deep_recursive=0
 # 	a warning message if -v is set
 is_forced=0
 
+# false by default - use -F to set it
+# desc:
+#	when it's set, rnspacy will 'diff' the two files and if they are the same
+#	it will overwrite it, otherwise will skip it
+#	in both cases a warning message will print with different message
+#	indicating the action that took place
+is_sforced=0
+
 # false by default - use -p to set it
 # it's used to only print the files about to move - checking
 # it will overwrite -v (-v will be true if -p is passed)
@@ -94,9 +102,11 @@ is_print=0
 # 	usually Info and Success are printed if -v is set
 rnspacy_print ()
 {
-	str_head=""
+	type_out=$1
 	str_code="$2"
 	str_body="$3"
+
+	str_head=""
 	str_tail="\033[0m"
 
 	ansi_red="\033[0;31m"
@@ -105,7 +115,7 @@ rnspacy_print ()
 
 	_fd=1
 
-	case $1 in
+	case $type_out in
 		1)
 			str_head="${ansi_red}rnspacy:[Error]($str_code):"
 			_fd=2
@@ -147,6 +157,10 @@ rnspacy_checkout_option ()
 	then
 		# if recursive
 		is_recursive=1
+	elif [ "$1" = "-F" ]
+	then
+		# if sforced
+		is_sforced=1
 	elif [ "$1" = "-f" ]
 	then
 		# if forced
@@ -221,6 +235,31 @@ rnspacy_single_item ()
 		then
 			rnspacy_print 0 0 \
 				"renamed(OVERWRITE) \"$new_name\" to \"$new_file\"" 
+		fi
+	elif [ $is_sforced -eq 1 ]
+	then
+		# if there's already a file with that name
+		# but overwrite is securely forced
+
+		if [ "$(diff "$new_name" "$new_file")" = "" ]
+		then
+			# they are the same
+			if [ $is_print -eq 0 ]
+			then
+				# if not in print mode
+				mv -f "$new_name" "$new_file"
+			fi
+
+			if [ $is_verbose -eq 1 ]
+			then
+				rnspacy_print 0 0 \
+					"renamed(DUPLICATE) \"$new_name\" to \"$new_file\"" 
+			fi
+		else
+			# they are not the same
+			rnspacy_print 2 1 \
+				"can't rename \"$new_name\" to \"$new_file\" - skipping it\n"`
+				`"\t\"$new_file\" already exist, and its content differs."
 		fi
 	else
 		# if there's already a file with that name

@@ -15,7 +15,7 @@
 - **Name:**         rnspacy
 - **Author:**       Erfan Shoara
 - **Version:**      1.0
-- **Release Date:** Aug 30, 2023
+- **Release Date:** Sep 14, 2023
 - **Repository:**   [link to github repo](https://github.com/erfanshoara/rnspacy.git)
 - **Language:**     shell
 - **Platform:**     Unix, Linux
@@ -118,6 +118,16 @@ good char: it changes the good character that replaces the bad characters
 by default is '\_', and if it's changed to mutiple char each bad char will be
 replaced by all good char.
 *good_char* is restricted, and it will fetal it it's not given.
+
+
+5. **-F**
+
+secure\_forced: -F will set the secure forced flag.
+by default it is set to false
+*-f* flag is used to enforce the overwrite of the files that have same name -
+the new *good* name is the same as an already existing file with the same path.
+Secure force will *diff* the contents of both files and if they are the same 
+(if *diff* returns nothing) it will overwrite.
 
 
 ## Install
